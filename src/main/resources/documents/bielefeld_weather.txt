@@ -1,0 +1,5 @@
+Weather forecast for Bielefeld:
+
+Today: 19°C/12°C, partly cloudy
+Tomorrow: 22°C/13°C, mostly sunny
+Day after tomorrow: 22°C/12°C, partly cloudy

@@ -1,0 +1,5 @@
+Weather forecast for Berlin:
+
+Today: 25°C/14°C, sunny
+Tomorrow: 26°C/15°C, partly cloudy
+Day after tomorrow: 24°C/14°C, mostly sunny

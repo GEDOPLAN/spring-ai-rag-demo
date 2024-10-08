@@ -1,0 +1,5 @@
+Weather forecast for Cologne:
+
+Today: 22°C/13°C, sunny
+Tomorrow: 24°C/14°C, sunny
+Day after tomorrow: 24°C/12°C, sunny
