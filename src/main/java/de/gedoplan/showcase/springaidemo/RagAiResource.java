@@ -4,9 +4,7 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.document.Document;
-import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.vectorstore.SearchRequest;
-import org.springframework.ai.vectorstore.SimpleVectorStore;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -26,9 +24,6 @@ public class RagAiResource {
     ChatClient chatClient;
 
     @Autowired
-    EmbeddingModel embeddingModel;
-
-    @Autowired
     VectorStore vectorStore;
 
     @PostMapping(consumes = MediaType.TEXT_PLAIN_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
@@ -44,7 +39,7 @@ public class RagAiResource {
 //                .advisors(new SimpleLoggerAdvisor())
                 .advisors(new QuestionAnswerAdvisor(
                         vectorStore,
-                        SearchRequest.defaults().withSimilarityThreshold(0.6).withTopK(3),
+                        SearchRequest.builder().similarityThreshold(0.6).topK(3).build(),
                         RAG_PROMPT))
                 .call()
                 .content();
@@ -52,12 +47,10 @@ public class RagAiResource {
 
     @PostMapping(consumes = MediaType.TEXT_PLAIN_VALUE, produces = MediaType.TEXT_PLAIN_VALUE, value = "/checkEmbeddingScore")
     public String checkEmbeddingScore(@RequestBody String question) {
-        float[] questionEmbedding = embeddingModel.embed(question);
-        List<Document> results = this.vectorStore.similaritySearch(question);
+        List<Document> results = this.vectorStore.similaritySearch(SearchRequest.builder().similarityThresholdAll().topK(10).query(question).build());
         return results.stream().map(document -> {
-            float[] embedding = document.getEmbedding();
-            double score = SimpleVectorStore.EmbeddingMath.cosineSimilarity(embedding, questionEmbedding);
-            return score + ": " + document.getContent();
+            Double score = document.getScore();
+            return score + ": " + document.getText();
         }).collect(Collectors.joining("\n\n"));
     }
 

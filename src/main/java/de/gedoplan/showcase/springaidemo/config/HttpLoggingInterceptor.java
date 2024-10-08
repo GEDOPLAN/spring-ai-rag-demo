@@ -1,6 +1,7 @@
 package de.gedoplan.showcase.springaidemo.config;
 
-import org.json.JSONObject;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -25,9 +26,12 @@ public class HttpLoggingInterceptor implements ClientHttpRequestInterceptor {
 
     private final boolean logResponses;
 
+    private final ObjectMapper objectMapper;
+
     public HttpLoggingInterceptor() {
         this.logRequests = true;
         this.logResponses = true;
+        this.objectMapper = new ObjectMapper();
     }
 
     @Override
@@ -45,11 +49,12 @@ public class HttpLoggingInterceptor implements ClientHttpRequestInterceptor {
         }
     }
 
-    private void logRequest(HttpRequest request, byte[] requestBody) {
+    private void logRequest(HttpRequest request, byte[] requestBody) throws JsonProcessingException
+    {
         String requestString = new String(requestBody, StandardCharsets.UTF_8);
         if (request.getHeaders().getContentType() != null &&
                 request.getHeaders().getContentType().includes(MediaType.APPLICATION_JSON)) {
-            requestString = new JSONObject(requestString).toString(4);
+            requestString = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(objectMapper.readValue(requestString, Object.class));
         }
 
         var truncatedRequestBody = requestString.lines().limit(TRUNCATE_LOG_AFTER_LINES).collect(Collectors.joining("\n"));
@@ -76,7 +81,7 @@ public class HttpLoggingInterceptor implements ClientHttpRequestInterceptor {
         String responseBody = StreamUtils.copyToString(response.getBody(), StandardCharsets.UTF_8);
         if (response.getHeaders().getContentType() != null &&
                 response.getHeaders().getContentType().includes(MediaType.APPLICATION_JSON)) {
-            responseBody = new JSONObject(responseBody).toString(4);
+            responseBody = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(objectMapper.readValue(responseBody, Object.class));
         }
 
         var truncatedResponseBody = responseBody.lines().limit(TRUNCATE_LOG_AFTER_LINES).collect(Collectors.joining("\n"));
